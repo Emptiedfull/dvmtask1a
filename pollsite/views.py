@@ -1,5 +1,5 @@
 from django.http import HttpResponse,HttpResponseRedirect
-from .models import Question,Choice
+from .models import Question,Choice,Tag
 from django.urls import reverse
 from django.db.models import F
 from django.views import generic
@@ -12,7 +12,23 @@ class IndexView(generic.ListView):
     context_object_name = "latest_question_list"
 
     def get_queryset(self):
-         return Question.objects.filter(pub_date__lte=timezone.now()).order_by("-pub_date")[:5]
+        q = (
+            Question.objects.filter(pub_date__lte=timezone.now())
+            .prefetch_related("tags")
+            .order_by("-pub_date")
+        )
+        tag = self.kwargs.get("tag")
+        if tag:
+            q = q.filter(tags__name = tag)
+        return q
+    def get_context_data(self, **kwargs):
+
+
+        ctx = super().get_context_data(**kwargs)
+        ctx["active_tag"] = self.kwargs.get("tag")
+        ctx["tags"] = Tag.objects.all()
+
+        return ctx
 
 
 class DetailView(generic.DetailView):
@@ -20,7 +36,7 @@ class DetailView(generic.DetailView):
     template_name = "polls/detail.html"
 
 class ResultsView(generic.DetailView):
-    name = Question
+    model = Question
     template_name = "polls/results.html"
 
 def vote(request,question_id):
@@ -43,7 +59,6 @@ def vote(request,question_id):
         selected_choice.save()
        
         return HttpResponseRedirect(reverse("polls:results", args=(question.id,)))
-    e
+    
 
-    return HttpResponse(res % question_id)
 

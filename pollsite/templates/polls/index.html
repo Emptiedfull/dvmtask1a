@@ -2,10 +2,25 @@
 
 <link rel="stylesheet" href="{% static 'polls/style.css' %}">
 
+<p>
+    Filter Tag: 
+   <a href="{% url 'polls:index' %}">All</a>
+   {% for tag in tags%}
+    <a href="{% url 'polls:tag' tag.name %}"
+       {% if tag.name == active_tag %}style="font-weight:bold"{% endif %}>{{ tag.name }}</a>
+    
+   {% endfor %}
+</p>
+
 {% if latest_question_list %}
     <ul>
     {% for question in latest_question_list %}
-        <li><a href="/polls/{{ question.id }}/">{{ question.question_text }}</a></li>
+        <li>
+            <a href="/polls/{{ question.id }}/">{{ question.question_text }}</a>
+            {% for tag in question.tags.all %}
+        <a href="{% url 'polls:tag' tag.name %}">#{{ tag.name }}</a>
+        {% endfor %}
+        </li>
     {% endfor %}
     </ul>
 {% else %}

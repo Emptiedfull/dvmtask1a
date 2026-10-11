@@ -3,9 +3,17 @@ from django.utils import timezone
 
 import datetime
 
+class Tag(models.Model):
+    name = models.CharField(max_length=50,unique=True)
+
+    def __str__(self):
+        return self.name
+
+
 class Question(models.Model):
     question_text = models.CharField(max_length= 200)
     pub_date = models.DateTimeField("date published")
+    tags = models.ManyToManyField(Tag,blank=True,related_name="questions")
 
     def __str__(self):
         return self.question_text   
